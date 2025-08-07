@@ -1,1642 +1,1205 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <base target="_top">
-    <title>Gerenciador de Dados da Planilha</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão de Dados</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              'inter': ['Inter', 'sans-serif'],
-            },
-            colors: {
-              primary: {
-                50: '#eff6ff',
-                100: '#dbeafe',
-                200: '#bfdbfe',
-                300: '#93c5fd',
-                400: '#60a5fa',
-                500: '#3b82f6',
-                600: '#2563eb',
-                700: '#1d4ed8',
-                800: '#1e40af',
-                900: '#1e3a8a',
-              },
-              gray: {
-                50: '#f9fafb',
-                100: '#f3f4f6',
-                200: '#e5e7eb',
-                300: '#d1d5db',
-                400: '#9ca3af',
-                500: '#6b7280',
-                600: '#4b5563',
-                700: '#374151',
-                800: '#1f2937',
-                900: '#111827',
-              }
-            }
-          }
-        }
-      }
-    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-      body {
-        font-family: 'Inter', sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        color: #374151;
-      }
-
-      .main-container {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 24px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        margin: 2rem;
-        padding: 2rem;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-      }
-
-      .header-section {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 2rem;
-        border-radius: 20px;
-        margin-bottom: 2rem;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .header-section::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-        opacity: 0.3;
-      }
-
-      .header-content {
-        position: relative;
-        z-index: 1;
-      }
-
-      .user-info {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
-        border-radius: 12px;
-        padding: 1rem;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-      }
-
-      .card {
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        border: 1px solid #e5e7eb;
-        transition: all 0.3s ease;
-        overflow: hidden;
-      }
-
-      .card:hover {
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        transform: translateY(-2px);
-      }
-
-      .card-header {
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        padding: 1.5rem;
-        border-bottom: 1px solid #e5e7eb;
-      }
-
-      .search-container {
-        position: relative;
-        max-width: 400px;
-        margin-left: auto;
-      }
-
-      .search-input {
-        background: white;
-        border: 2px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 0.75rem 1rem 0.75rem 3rem;
-        width: 100%;
-        transition: all 0.3s ease;
-        font-size: 0.95rem;
-      }
-
-      .search-input:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        outline: none;
-      }
-
-      .search-icon {
-        position: absolute;
-        left: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #9ca3af;
-      }
-
-      .filter-card {
-        margin-bottom: 1.5rem;
-      }
-
-      .filter-toggle {
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-        color: white;
-        border: none;
-        border-radius: 10px;
-        padding: 0.75rem 1.5rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-
-      .filter-toggle:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-      }
-
-      .form-group {
-        margin-bottom: 1rem;
-      }
-
-      .form-group label {
-        display: block;
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: #374151;
-        margin-bottom: 0.5rem;
-      }
-
-      .form-input, .form-select {
-        background: #f9fafb;
-        border: 2px solid #e5e7eb;
-        color: #374151;
-        font-size: 0.95rem;
-        border-radius: 10px;
-        padding: 0.75rem 1rem;
-        width: 100%;
-        transition: all 0.3s ease;
-      }
-
-      .form-input:focus, .form-select:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        outline: none;
-        background: white;
-      }
-
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1.5rem;
-        font-weight: 600;
-        border-radius: 10px;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-        font-size: 0.95rem;
-      }
-
-      .btn:hover {
-        transform: translateY(-1px);
-      }
-
-      .btn-primary {
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-        color: white;
-        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
-      }
-
-      .btn-primary:hover {
-        box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
-      }
-
-      .btn-secondary {
-        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-        color: #374151;
-        border: 1px solid #d1d5db;
-      }
-
-      .btn-secondary:hover {
-        background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      }
-
-      .btn-danger {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        color: white;
-        box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
-      }
-
-      .btn-danger:hover {
-        box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.4);
-      }
-
-      .btn-success {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        color: white;
-        box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
-      }
-
-      .btn-success:hover {
-        box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
-      }
-
-      .table-container {
-        background: white;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        border: 1px solid #e5e7eb;
-      }
-
-      .table-wrapper {
-        max-height: 70vh;
-        overflow: auto;
-      }
-
-      .tabela-dados {
-        width: 100%;
-        border-collapse: collapse;
-      }
-
-      .tabela-dados thead th {
-        position: sticky;
-        top: 0;
-        background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-        color: white;
-        z-index: 10;
-        font-size: 0.875rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        padding: 1rem 0.75rem;
-        border-bottom: 2px solid #4b5563;
-      }
-
-      .tabela-dados tbody tr {
-        transition: all 0.2s ease;
-        border-bottom: 1px solid #f3f4f6;
-      }
-
-      .tabela-dados tbody tr:nth-child(even) {
-        background: #f8fafc;
-      }
-
-      .tabela-dados tbody tr:hover {
-        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-        transform: scale(1.01);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-
-      .tabela-dados td {
-        font-size: 0.9rem;
-        color: #4b5563;
-        padding: 1rem 0.75rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 200px;
-      }
-
-      .tabela-dados th.sortable {
-        cursor: pointer;
-        position: relative;
-        user-select: none;
-      }
-
-      .tabela-dados th.sortable:hover {
-        background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
-      }
-
-      .tabela-dados th.sorted-asc::after {
-        content: ' ↑';
-        font-size: 1rem;
-        color: #3b82f6;
-      }
-
-      .tabela-dados th.sorted-desc::after {
-        content: ' ↓';
-        font-size: 1rem;
-        color: #3b82f6;
-      }
-
-      .pagination-container {
-        background: #f8fafc;
-        padding: 1.5rem;
-        border-top: 1px solid #e5e7eb;
-        display: flex;
-        justify-content: between;
-        align-items: center;
-        gap: 1rem;
-      }
-
-      .page-info {
-        background: white;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        font-weight: 600;
-        color: #374151;
-        border: 1px solid #e5e7eb;
-      }
-
-      .message-box {
-        padding: 1rem;
-        border-radius: 12px;
-        font-weight: 500;
-        margin: 1rem 0;
-        border-left: 4px solid;
-      }
-
-      .message-box.success {
-        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-        color: #065f46;
-        border-left-color: #10b981;
-      }
-
-      .message-box.error {
-        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-        color: #991b1b;
-        border-left-color: #ef4444;
-      }
-
-      .loading-spinner {
-        border: 2px solid #f3f3f3;
-        border-top: 2px solid #3b82f6;
-        border-radius: 50%;
-        width: 1.25rem;
-        height: 1.25rem;
-        animation: spin 1s linear infinite;
-        display: inline-block;
-      }
-
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-
-      .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(4px);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 50;
-        padding: 1rem;
-      }
-
-      .modal-content {
-        background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        max-width: 1200px;
-        width: 100%;
-        max-height: 90vh;
-        overflow-y: auto;
-        position: relative;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-      }
-
-      .modal-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 1.5rem 2rem;
-        margin: -2rem -2rem 2rem -2rem;
-        border-radius: 20px 20px 0 0;
-        position: relative;
-      }
-
-      .modal-close-btn {
-        position: absolute;
-        top: 1rem;
-        right: 1.5rem;
-        font-size: 1.5rem;
-        color: white;
-        cursor: pointer;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-        width: 2.5rem;
-        height: 2.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-      }
-
-      .modal-close-btn:hover {
-        background: rgba(255, 255, 255, 0.3);
-        transform: scale(1.1);
-      }
-
-      .status-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-      }
-
-      .status-conforme {
-        background: #d1fae5;
-        color: #065f46;
-      }
-
-      .status-parcial {
-        background: #fef3c7;
-        color: #92400e;
-      }
-
-      .status-inconforme {
-        background: #fee2e2;
-        color: #991b1b;
-      }
-
-      .footer {
-        background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-        color: white;
-        text-align: center;
-        padding: 2rem;
-        margin-top: 3rem;
-        border-radius: 20px;
-        font-weight: 600;
-      }
-
-      @media (max-width: 768px) {
-        .main-container {
-          margin: 1rem;
-          padding: 1rem;
-          border-radius: 16px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .header-section {
-          padding: 1.5rem;
-          border-radius: 16px;
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .user-info {
+            background: linear-gradient(135deg, #4299e1, #3182ce);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            display: inline-block;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .dashboard-card .icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dashboard-card .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .dashboard-card .label {
+            color: #718096;
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s ease;
+            color: #667eea;
+        }
+
+        .toggle-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .card-content {
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .card-content.collapsed {
+            max-height: 0;
+            padding: 0;
+            margin: 0;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: #4a5568;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(72, 187, 120, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #a0aec0, #718096);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(160, 174, 192, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(245, 101, 101, 0.3);
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        thead th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 18px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 3px solid #5a67d8;
+        }
+
+        tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        tbody tr:hover {
+            background-color: #edf2f7;
+            transform: scale(1.01);
+        }
+
+        tbody td {
+            padding: 16px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .pagination button {
+            padding: 10px 16px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .page-info {
+            font-weight: 600;
+            color: #4a5568;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+            font-size: 1.1rem;
+        }
+
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
         }
 
         .modal-content {
-          margin: 0.5rem;
-          padding: 1.5rem;
-          border-radius: 16px;
+            background: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .modal-header {
-          margin: -1.5rem -1.5rem 1.5rem -1.5rem;
-          padding: 1rem 1.5rem;
-          border-radius: 16px 16px 0 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .tabela-dados td {
-          max-width: 120px;
-          font-size: 0.8rem;
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
         }
-      }
 
-      .animate-fade-in {
-        animation: fadeIn 0.5s ease-in-out;
-      }
+        .close {
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
 
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
+        .close:hover {
+            transform: scale(1.1);
+        }
 
-      .animate-slide-down {
-        animation: slideDown 0.3s ease-out;
-      }
+        .modal-body {
+            padding: 30px;
+        }
 
-      @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            padding-top: 25px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            border-radius: 8px;
+        }
+
+        .footer {
+            background: rgba(45, 55, 72, 0.95);
+            backdrop-filter: blur(10px);
+            color: white;
+            text-align: center;
+            padding: 25px;
+            border-radius: 20px;
+            margin-top: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer p {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .pagination {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+
+            .table-container {
+                font-size: 0.8rem;
+            }
+
+            thead th,
+            tbody td {
+                padding: 12px 8px;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .filters-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
     </style>
-  </head>
-  <body class="min-h-screen">
-    <div class="main-container animate-fade-in">
-      <!-- Header Section -->
-      <div class="header-section">
-        <div class="header-content">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <h1 class="text-3xl md:text-4xl font-bold mb-2">
-                <i class="fas fa-database mr-3"></i>
-                Gerenciador de Dados
-              </h1>
-              <p class="text-lg opacity-90">Sistema de controle e análise de processos</p>
-            </div>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-database"></i> Sistema de Gestão de Dados</h1>
+            <p>Gerencie seus dados de forma eficiente e organizada</p>
             <div class="user-info">
-              <div class="flex items-center gap-2">
-                <i class="fas fa-user-circle text-xl"></i>
-                <div>
-                  <p class="text-sm opacity-75">Usuário logado:</p>
-                  <p id="userEmailDisplay" class="font-semibold">Carregando...</p>
+                <i class="fas fa-user"></i> Usuário: <span id="userEmailDisplay">Carregando...</span>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="dashboard">
+            <div class="dashboard-card">
+                <div class="icon"><i class="fas fa-chart-bar"></i></div>
+                <div class="number" id="totalRecords">0</div>
+                <div class="label">Total de Registros</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="icon"><i class="fas fa-check-circle"></i></div>
+                <div class="number" id="statusAnalisado">0</div>
+                <div class="label">Status Analisado</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="icon"><i class="fas fa-calendar-alt"></i></div>
+                <div class="number" id="recentRecords">0</div>
+                <div class="label">Registros Recentes (30 dias)</div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="card">
+            <div class="card-header" onclick="toggleFilters()">
+                <div class="card-title">
+                    <i class="fas fa-filter"></i> Filtros Avançados
                 </div>
-              </div>
+                <i class="fas fa-chevron-down toggle-icon" id="filtersToggle"></i>
             </div>
-          </div>
+            <div class="card-content" id="filtersContent">
+                <div class="filters-grid">
+                    <div class="form-group">
+                        <label for="filtroSistema">Sistema:</label>
+                        <input type="text" id="filtroSistema" placeholder="Filtrar por sistema">
+                    </div>
+                    <div class="form-group">
+                        <label for="filtroNumPaejSaj">Núm. PAE/SAJ:</label>
+                        <input type="text" id="filtroNumPaejSaj" placeholder="Filtrar por número">
+                    </div>
+                    <div class="form-group">
+                        <label for="filtroInteressado">Interessado:</label>
+                        <input type="text" id="filtroInteressado" placeholder="Filtrar por interessado">
+                    </div>
+                    <div class="form-group">
+                        <label for="filtroSituacao">Situação:</label>
+                        <input type="text" id="filtroSituacao" placeholder="Filtrar por situação">
+                    </div>
+                    <div class="form-group">
+                        <label for="filtroAssimetria">Assimetria:</label>
+                        <input type="text" id="filtroAssimetria" placeholder="Filtrar por assimetria">
+                    </div>
+                    <div class="form-group">
+                        <label for="filtroUgOrigem">UG Origem:</label>
+                        <input type="text" id="filtroUgOrigem" placeholder="Filtrar por UG origem">
+                    </div>
+                    <div class="form-group">
+                        <label for="filtroAssunto">Assunto:</label>
+                        <input type="text" id="filtroAssunto" placeholder="Filtrar por assunto">
+                    </div>
+                    <div class="form-group">
+                        <label for="filtroSubAssunto">Sub Assunto:</label>
+                        <input type="text" id="filtroSubAssunto" placeholder="Filtrar por sub assunto">
+                    </div>
+                    <div class="form-group">
+                        <label for="filtroAciResponsavel">ACI Responsável:</label>
+                        <input type="text" id="filtroAciResponsavel" placeholder="Filtrar por ACI responsável">
+                    </div>
+                    <div class="form-group">
+                        <label for="filtroDestino">Destino:</label>
+                        <input type="text" id="filtroDestino" placeholder="Filtrar por destino">
+                    </div>
+                    <div class="form-group">
+                        <label for="filtroSaidaInicio">Saída - Data Início:</label>
+                        <input type="date" id="filtroSaidaInicio">
+                    </div>
+                    <div class="form-group">
+                        <label for="filtroSaidaFim">Saída - Data Fim:</label>
+                        <input type="date" id="filtroSaidaFim">
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="aplicarFiltros()">
+                        <i class="fas fa-search"></i> Aplicar Filtros
+                    </button>
+                    <button class="btn btn-secondary" onclick="limparFiltros()">
+                        <i class="fas fa-eraser"></i> Limpar Filtros
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
 
-      <!-- Search Section -->
-      <div class="search-container mb-6">
-        <div class="relative">
-          <i class="fas fa-search search-icon"></i>
-          <input 
-            type="text" 
-            id="globalSearchInput" 
-            placeholder="Buscar em todos os campos..." 
-            class="search-input"
-          />
+        <!-- Dados da Planilha -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-table"></i> Dados da Planilha
+                </div>
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="carregarDados()">
+                        <i class="fas fa-sync-alt"></i> Atualizar Dados
+                    </button>
+                    <button class="btn btn-success" onclick="abrirModalNovoRegistro()">
+                        <i class="fas fa-plus"></i> Novo Registro
+                    </button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-cog"></i> SISTEMA</th>
+                                <th><i class="fas fa-hashtag"></i> NÚM.PAE/SAJ</th>
+                                <th><i class="fas fa-user"></i> INTERESSADO</th>
+                                <th><i class="fas fa-calendar"></i> ENTRADA</th>
+                                <th><i class="fas fa-info-circle"></i> SITUAÇÃO</th>
+                                <th><i class="fas fa-balance-scale"></i> ASSIMETRIA</th>
+                                <th><i class="fas fa-comment"></i> OBSERVAÇÃO</th>
+                                <th><i class="fas fa-building"></i> UG ORIGEM</th>
+                                <th><i class="fas fa-tag"></i> ASSUNTO</th>
+                                <th><i class="fas fa-tags"></i> SUB ASSUNTO</th>
+                                <th><i class="fas fa-user-tie"></i> ACI RESPONSÁVEL</th>
+                                <th><i class="fas fa-map-marker-alt"></i> DESTINO</th>
+                                <th><i class="fas fa-calendar-check"></i> SAÍDA</th>
+                                <th><i class="fas fa-tools"></i> AÇÕES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaDados">
+                            <tr>
+                                <td colspan="14" class="loading">
+                                    <i class="fas fa-spinner"></i><br>
+                                    Carregando dados...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="paginacao"></div>
+            </div>
         </div>
-      </div>
 
-      <!-- Filters Section -->
-      <div class="card filter-card">
-        <div class="card-header">
-          <div class="flex justify-between items-center cursor-pointer select-none" id="filterCardHeader">
-            <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-              <i class="fas fa-filter"></i>
-              Filtros Avançados
-            </h2>
-            <button type="button" id="toggleFilterCardBtn" class="filter-toggle">
-              <i class="fas fa-chevron-down transition-transform duration-300" id="filterChevron"></i>
-              Exibir Filtros
-            </button>
-          </div>
+        <!-- Footer -->
+        <div class="footer">
+            <p><i class="fas fa-code"></i> Desenvolvido por DTIGD © 2025</p>
         </div>
-        <div class="p-6" id="filterFormContainer" style="display: none;">
-          <form id="filterForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <div class="form-group">
-              <label for="filterSistema">
-                <i class="fas fa-cogs mr-1"></i>
-                Sistema:
-              </label>
-              <select id="filterSistema" name="sistema" class="form-select">
-                <option value="">Todos</option>
-                <option value="PAE 3.0">PAE 3.0</option>
-                <option value="PAE 4.0">PAE 4.0</option>
-                <option value="SAJ/ATTUS">SAJ/ATTUS</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="filterNumPaejSaj">
-                <i class="fas fa-hashtag mr-1"></i>
-                Núm.PAE/SAJ:
-              </label>
-              <input type="text" id="filterNumPaejSaj" name="numPaejSaj" class="form-input">
-            </div>
-            <div class="form-group">
-              <label for="filterInteressado">
-                <i class="fas fa-user mr-1"></i>
-                Interessado:
-              </label>
-              <input type="text" id="filterInteressado" name="interessado" class="form-input">
-            </div>
-            <div class="form-group">
-              <label for="filterSituacao">
-                <i class="fas fa-flag mr-1"></i>
-                Situação:
-              </label>
-              <select id="filterSituacao" name="situacao" class="form-select">
-                <option value="">Todos</option>
-                <option value="CONFORME">CONFORME</option>
-                <option value="CONFORME PARCIAL">CONFORME PARCIAL</option>
-                <option value="INCONFORME">INCONFORME</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="filterAssimetria">
-                <i class="fas fa-exclamation-triangle mr-1"></i>
-                Assimetria:
-              </label>
-              <select id="filterAssimetria" name="assimetria" class="form-select">
-                <option value="">Todos</option>
-                <option value="DESACORDO LEGAL">DESACORDO LEGAL</option>
-                <option value="FALTA DE DOCUMENTO">FALTA DE DOCUMENTO</option>
-                <option value="PRAZO">PRAZO</option>
-                <option value="ESCLARECIMENTO">ESCLARECIMENTO</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="filterUgOrigem">
-                <i class="fas fa-building mr-1"></i>
-                UG Origem:
-              </label>
-              <input type="text" id="filterUgOrigem" name="ugOrigem" class="form-input">
-            </div>
-            <div class="form-group">
-              <label for="filterAssunto">
-                <i class="fas fa-tag mr-1"></i>
-                Assunto:
-              </label>
-              <select id="filterAssunto" name="assunto" class="form-select">
-                <option value="">Todos</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="filterSubAssunto">
-                <i class="fas fa-tags mr-1"></i>
-                Sub Assunto:
-              </label>
-              <select id="filterSubAssunto" name="subAssunto" class="form-select" disabled>
-                <option value="">Todos</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="filterAciResponsavel">
-                <i class="fas fa-user-tie mr-1"></i>
-                ACI Responsável:
-              </label>
-              <input type="text" id="filterAciResponsavel" name="aciResponsavel" class="form-input">
-            </div>
-            <div class="form-group">
-              <label for="filterDestino">
-                <i class="fas fa-map-marker-alt mr-1"></i>
-                Destino:
-              </label>
-              <input type="text" id="filterDestino" name="destino" class="form-input">
-            </div>
-            <div class="form-group">
-              <label for="filterSaidaInicio">
-                <i class="fas fa-calendar-alt mr-1"></i>
-                Saída (de):
-              </label>
-              <input type="date" id="filterSaidaInicio" name="saidaInicio" class="form-input">
-            </div>
-            <div class="form-group">
-              <label for="filterSaidaFim">
-                <i class="fas fa-calendar-alt mr-1"></i>
-                Saída (até):
-              </label>
-              <input type="date" id="filterSaidaFim" name="saidaFim" class="form-input">
-            </div>
-            <div class="flex gap-3 col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4 mt-4">
-              <button type="button" id="applyFiltersBtn" class="btn btn-primary">
-                <i class="fas fa-search"></i>
-                Aplicar Filtros
-                <span id="filterSpinner" class="loading-spinner hidden ml-2"></span>
-              </button>
-              <button type="button" id="clearFiltersBtn" class="btn btn-secondary">
-                <i class="fas fa-times"></i>
-                Limpar Filtros
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- Data Table Section -->
-      <div class="card">
-        <div class="card-header">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-              <i class="fas fa-table"></i>
-              Dados da Planilha
-            </h2>
-            <div class="flex gap-3">
-              <button id="refreshDataBtn" class="btn btn-secondary">
-                <i class="fas fa-sync-alt"></i>
-                Atualizar
-                <span id="refreshSpinner" class="loading-spinner hidden ml-2"></span>
-              </button>
-              <button id="openAddRecordModalBtn" class="btn btn-success">
-                <i class="fas fa-plus"></i>
-                Novo Registro
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        <div class="table-container">
-          <div class="table-wrapper" id="dataContainer">
-            <table class="tabela-dados">
-              <thead>
-                <tr>
-                  <th class="sortable" data-field="sistema">
-                    <i class="fas fa-cogs mr-1"></i>Sistema
-                  </th>
-                  <th class="sortable" data-field="numPaejSaj">
-                    <i class="fas fa-hashtag mr-1"></i>Núm.PAE/SAJ
-                  </th>
-                  <th class="sortable" data-field="interessado">
-                    <i class="fas fa-user mr-1"></i>Interessado
-                  </th>
-                  <th class="sortable" data-field="entrada">
-                    <i class="fas fa-calendar-plus mr-1"></i>Entrada
-                  </th>
-                  <th class="sortable" data-field="situacao">
-                    <i class="fas fa-flag mr-1"></i>Situação
-                  </th>
-                  <th class="sortable" data-field="assimetria">
-                    <i class="fas fa-exclamation-triangle mr-1"></i>Assimetria
-                  </th>
-                  <th>
-                    <i class="fas fa-comment mr-1"></i>Observação
-                  </th>
-                  <th class="sortable" data-field="ugOrigem">
-                    <i class="fas fa-building mr-1"></i>UG Origem
-                  </th>
-                  <th class="sortable" data-field="assunto">
-                    <i class="fas fa-tag mr-1"></i>Assunto
-                  </th>
-                  <th class="sortable" data-field="subAssunto">
-                    <i class="fas fa-tags mr-1"></i>Sub Assunto
-                  </th>
-                  <th class="sortable" data-field="aciResponsavel">
-                    <i class="fas fa-user-tie mr-1"></i>ACI Responsável
-                  </th>
-                  <th class="sortable" data-field="destino">
-                    <i class="fas fa-map-marker-alt mr-1"></i>Destino
-                  </th>
-                  <th class="sortable" data-field="saida">
-                    <i class="fas fa-calendar-minus mr-1"></i>Saída
-                  </th>
-                  <th>
-                    <i class="fas fa-cog mr-1"></i>Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody id="dataTableBody">
-                <tr>
-                  <td colspan="14" class="text-center py-8 text-gray-500">
-                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                    <br>Carregando dados...
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          
-          <div class="pagination-container">
-            <button id="prevPageBtn" class="btn btn-secondary" disabled>
-              <i class="fas fa-chevron-left"></i>
-              Anterior
-            </button>
-            <div class="page-info" id="pageInfo">Página 1 de 1</div>
-            <button id="nextPageBtn" class="btn btn-secondary" disabled>
-              Próximo
-              <i class="fas fa-chevron-right"></i>
-            </button>
-          </div>
-        </div>
-        
-        <div id="readMessage" class="message-box hidden"></div>
-      </div>
-
-      <!-- Footer -->
-      <div class="footer">
-        <p>
-          <i class="fas fa-code mr-2"></i>
-          Desenvolvido por <strong>DTIGD</strong> © 2025
-        </p>
-      </div>
     </div>
 
-    <!-- Modal -->
-    <div id="recordModal" class="modal-overlay hidden">
-      <div class="modal-content animate-fade-in">
-        <div class="modal-header">
-          <h2 id="modalTitle" class="text-2xl font-bold flex items-center gap-2">
-            <i class="fas fa-plus-circle"></i>
-            Adicionar Novo Registro
-          </h2>
-          <button id="closeModalBtn" class="modal-close-btn">
-            <i class="fas fa-times"></i>
-          </button>
+    <!-- Modal para Novo/Editar Registro -->
+    <div id="modalRegistro" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitulo"><i class="fas fa-plus"></i> Novo Registro</h2>
+                <span class="close" onclick="fecharModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="formRegistro">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="sistema">Sistema:</label>
+                            <input type="text" id="sistema" name="sistema" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="numPaejSaj">Núm. PAE/SAJ:</label>
+                            <input type="text" id="numPaejSaj" name="numPaejSaj" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="interessado">Interessado:</label>
+                            <input type="text" id="interessado" name="interessado" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="entrada">Entrada:</label>
+                            <input type="date" id="entrada" name="entrada">
+                        </div>
+                        <div class="form-group">
+                            <label for="situacao">Situação:</label>
+                            <input type="text" id="situacao" name="situacao">
+                        </div>
+                        <div class="form-group">
+                            <label for="assimetria">Assimetria:</label>
+                            <input type="text" id="assimetria" name="assimetria">
+                        </div>
+                        <div class="form-group">
+                            <label for="observacao">Observação:</label>
+                            <input type="text" id="observacao" name="observacao">
+                        </div>
+                        <div class="form-group">
+                            <label for="ugOrigem">UG Origem:</label>
+                            <select id="ugOrigem" name="ugOrigem" required>
+                                <option value="">Selecione uma UG Origem</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="assunto">Assunto:</label>
+                            <select id="assunto" name="assunto" onchange="carregarSubAssuntos()">
+                                <option value="">Selecione um assunto</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="subAssunto">Sub Assunto:</label>
+                            <select id="subAssunto" name="subAssunto">
+                                <option value="">Selecione um sub assunto</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="aciResponsavel">ACI Responsável:</label>
+                            <input type="text" id="aciResponsavel" name="aciResponsavel">
+                        </div>
+                        <div class="form-group">
+                            <label for="destino">Destino:</label>
+                            <input type="text" id="destino" name="destino">
+                        </div>
+                        <div class="form-group">
+                            <label for="saida">Saída:</label>
+                            <input type="date" id="saida" name="saida">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="fecharModal()">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-        
-        <form id="recordFormModal" class="space-y-6">
-          <input type="hidden" id="recordRowIndex" name="rowIndex">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <div class="form-group">
-              <label for="modalSistema">
-                <i class="fas fa-cogs mr-1"></i>
-                Sistema:
-              </label>
-              <select id="modalSistema" name="sistema" class="form-select">
-                <option value="">Selecione</option>
-                <option value="PAE 3.0">PAE 3.0</option>
-                <option value="PAE 4.0">PAE 4.0</option>
-                <option value="SAJ/ATTUS">SAJ/ATTUS</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="modalNumPaejSaj">
-                <i class="fas fa-hashtag mr-1"></i>
-                Núm.PAE/SAJ:
-              </label>
-              <input type="text" id="modalNumPaejSaj" name="numPaejSaj" class="form-input">
-            </div>
-            <div class="form-group">
-              <label for="modalInteressado">
-                <i class="fas fa-user mr-1"></i>
-                Interessado:
-              </label>
-              <input type="text" id="modalInteressado" name="interessado" class="form-input">
-            </div>
-            <div class="form-group">
-              <label for="modalEntrada">
-                <i class="fas fa-calendar-plus mr-1"></i>
-                Entrada:
-              </label>
-              <input type="date" id="modalEntrada" name="entrada" class="form-input">
-            </div>
-            <div class="form-group">
-              <label for="modalSituacao">
-                <i class="fas fa-flag mr-1"></i>
-                Situação:
-              </label>
-              <select id="modalSituacao" name="situacao" class="form-select">
-                <option value="">Selecione</option>
-                <option value="Conforme">Conforme</option>
-                <option value="Parcialmente Conforme">Parcialmente Conforme</option>
-                <option value="Assimetrias">Assimetrias</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="modalAssimetria">
-                <i class="fas fa-exclamation-triangle mr-1"></i>
-                Assimetria:
-              </label>
-              <select id="modalAssimetria" name="assimetria" class="form-select">
-                <option value="">Selecione</option>
-                <option value="DESACORDO LEGAL">DESACORDO LEGAL</option>
-                <option value="FALTA DE DOCUMENTO">FALTA DE DOCUMENTO</option>
-                <option value="PRAZO">PRAZO</option>
-                <option value="ESCLARECIMENTO">ESCLARECIMENTO</option>
-              </select>
-            </div>
-            <div class="form-group xl:col-span-2">
-              <label for="modalObservacao">
-                <i class="fas fa-comment mr-1"></i>
-                Observação:
-              </label>
-              <textarea id="modalObservacao" name="observacao" rows="3" class="form-input resize-none"></textarea>
-            </div>
-            <div class="form-group">
-              <label for="modalUgOrigem">
-                <i class="fas fa-building mr-1"></i>
-                UG Origem:
-              </label>
-              <select id="modalUgOrigem" name="ugOrigem" class="form-select">
-                <option value="">Selecione uma UG Origem</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="modalAssunto">
-                <i class="fas fa-tag mr-1"></i>
-                Assunto:
-              </label>
-              <select id="modalAssunto" name="assunto" class="form-select">
-                <option value="">Selecione</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="modalSubAssunto">
-                <i class="fas fa-tags mr-1"></i>
-                Sub Assunto:
-              </label>
-              <select id="modalSubAssunto" name="subAssunto" class="form-select" disabled>
-                <option value="">Selecione</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="modalAciResponsavel">
-                <i class="fas fa-user-tie mr-1"></i>
-                ACI Responsável:
-              </label>
-              <input type="text" id="modalAciResponsavel" name="aciResponsavel" class="form-input">
-            </div>
-            <div class="form-group">
-              <label for="modalDestino">
-                <i class="fas fa-map-marker-alt mr-1"></i>
-                Destino:
-              </label>
-              <input type="text" id="modalDestino" name="destino" class="form-input">
-            </div>
-            <div class="form-group">
-              <label for="modalSaida">
-                <i class="fas fa-calendar-minus mr-1"></i>
-                Saída:
-              </label>
-              <input type="date" id="modalSaida" name="saida" class="form-input">
-            </div>
-          </div>
-          
-          <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
-            <button type="button" onclick="closeRecordModal()" class="btn btn-secondary">
-              <i class="fas fa-times"></i>
-              Cancelar
-            </button>
-            <button type="submit" id="modalSubmitBtn" class="btn btn-primary">
-              <i class="fas fa-save"></i>
-              Gravar Registro
-              <span id="modalLoadingSpinner" class="loading-spinner hidden ml-2"></span>
-            </button>
-          </div>
-          
-          <div id="modalResponseMessage" class="message-box hidden"></div>
-        </form>
-      </div>
     </div>
 
     <script>
-      // Variáveis de Paginação
-      let currentPage = 1;
-      const pageSize = 20;
-      let totalRecords = 0;
-      let totalPages = 1;
-      let currentFilters = {};
+        // Variáveis globais
+        let paginaAtual = 1;
+        const registrosPorPagina = 10;
+        let totalRegistros = 0;
+        let modoEdicao = false;
+        let linhaEditando = null;
+        let assuntoSubAssuntoMap = {};
 
-      // Variáveis do Dashboard
-      let allDataForDashboard = [];
-      let currentTableData = [];
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarEmailUsuario();
+            carregarDashboard();
+            carregarDados();
+            carregarAssuntoSubAssuntoMap();
+            carregarUGOrigemOptions();
+        });
 
-      // Referências aos elementos do modal
-      const recordModal = document.getElementById('recordModal');
-      const openAddRecordModalBtn = document.getElementById('openAddRecordModalBtn');
-      const closeModalBtn = document.getElementById('closeModalBtn');
-      const recordFormModal = document.getElementById('recordFormModal');
-      const modalLoadingSpinner = document.getElementById('modalLoadingSpinner');
-      const modalResponseMessage = document.getElementById('modalResponseMessage');
-      const modalTitle = document.getElementById('modalTitle');
-      const modalSubmitBtn = document.getElementById('modalSubmitBtn');
-
-      // Referência ao campo oculto para o índice da linha
-      const recordRowIndex = document.getElementById('recordRowIndex');
-
-      // Referências aos campos Sistema e Num. PAEJ S.A.J.
-      const modalSistemaSelect = document.getElementById('modalSistema');
-      const modalNumPaejSajInput = document.getElementById('modalNumPaejSaj');
-      const sistemaSelectFilter = document.getElementById('filterSistema');
-
-      // Referências para os campos Situação e Assimetria no modal
-      const modalSituacaoSelect = document.getElementById('modalSituacao');
-      const modalAssimetriaSelect = document.getElementById('modalAssimetria');
-
-      // Referências para os campos Assunto e Sub Assunto
-      const modalAssuntoSelect = document.getElementById('modalAssunto');
-      const modalSubAssuntoSelect = document.getElementById('modalSubAssunto');
-      const filterAssuntoSelect = document.getElementById('filterAssunto');
-      const filterSubAssuntoSelect = document.getElementById('filterSubAssunto');
-
-      // Referências para os novos campos
-      const modalAciResponsavelInput = document.getElementById('modalAciResponsavel');
-      const modalDestinoInput = document.getElementById('modalDestino');
-      const modalSaidaInput = document.getElementById('modalSaida');
-
-      const filterAciResponsavelInput = document.getElementById('filterAciResponsavel');
-      const filterDestinoInput = document.getElementById('filterDestino');
-      const filterSaidaInput = document.getElementById('filterSaida');
-
-      // Referência para exibir o e-mail do usuário
-      const userEmailDisplay = document.getElementById('userEmailDisplay');
-
-      let assuntoSubAssuntoMap = {};
-
-      // Nomes dos campos do formulário
-      const formFields = [
-        'sistema', 'numPaejSaj', 'interessado', 'entrada', 'situacao',
-        'assimetria', 'observacao', 'ugOrigem', 'assunto', 'subAssunto',
-        'aciResponsavel', 'destino', 'saida'
-      ];
-
-      // Mapeamento dos nomes dos campos para os índices das colunas
-      const sheetColumnIndexes = {
-        sistema: 0,
-        numPaejSaj: 1,
-        interessado: 2,
-        entrada: 3,
-        situacao: 4,
-        assimetria: 5,
-        observacao: 6,
-        ugOrigem: 7,
-        assunto: 8,
-        subAssunto: 9,
-        aciResponsavel: 10,
-        destino: 11,
-        saida: 12
-      };
-
-      // Toggle do card de filtros
-      document.getElementById('toggleFilterCardBtn').addEventListener('click', function() {
-        const filterForm = document.getElementById('filterFormContainer');
-        const chevron = document.getElementById('filterChevron');
-        const isHidden = filterForm.style.display === 'none';
-        
-        if (isHidden) {
-          filterForm.style.display = 'block';
-          filterForm.classList.add('animate-slide-down');
-          chevron.style.transform = 'rotate(180deg)';
-          this.innerHTML = '<i class="fas fa-chevron-up transition-transform duration-300"></i> Ocultar Filtros';
-        } else {
-          filterForm.style.display = 'none';
-          chevron.style.transform = 'rotate(0deg)';
-          this.innerHTML = '<i class="fas fa-chevron-down transition-transform duration-300"></i> Exibir Filtros';
+        // Função para carregar e exibir o e-mail do usuário
+        function carregarEmailUsuario() {
+            google.script.run
+                .withSuccessHandler(function(email) {
+                    document.getElementById('userEmailDisplay').textContent = email;
+                })
+                .withFailureHandler(function(error) {
+                    console.error('Erro ao carregar e-mail do usuário:', error);
+                    document.getElementById('userEmailDisplay').textContent = 'Erro ao carregar';
+                })
+                .getUserEmail();
         }
-      });
 
-      // Função para exibir mensagens de status
-      function showMessage(elementId, message, type) {
-        const messageBox = document.getElementById(elementId);
-        messageBox.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} mr-2"></i>${message}`;
-        messageBox.className = `message-box ${type}`;
-        messageBox.classList.remove('hidden');
-      }
-
-      // Função para esconder mensagens de status
-      function hideMessage(elementId) {
-        const messageBox = document.getElementById(elementId);
-        if (messageBox) {
-          messageBox.classList.add('hidden');
+        // Função para carregar dados do dashboard
+        function carregarDashboard() {
+            google.script.run
+                .withSuccessHandler(function(dados) {
+                    document.getElementById('totalRecords').textContent = dados.totalRecords;
+                    document.getElementById('statusAnalisado').textContent = dados.statusAnalisado;
+                    document.getElementById('recentRecords').textContent = dados.recentRecords;
+                })
+                .withFailureHandler(function(error) {
+                    console.error('Erro ao carregar dashboard:', error);
+                })
+                .lerTodosOsDadosWebSemPaginacao();
         }
-      }
 
-      // Função para mostrar ou esconder o spinner de carregamento
-      function toggleSpinner(spinnerId, show) {
-        const spinner = document.getElementById(spinnerId);
-        if (spinner) {
-          spinner.classList.toggle('hidden', !show);
+        // Função para carregar o mapeamento de Assunto/Sub Assunto
+        function carregarAssuntoSubAssuntoMap() {
+            google.script.run
+                .withSuccessHandler(function(map) {
+                    assuntoSubAssuntoMap = map;
+                    popularDropdownAssuntos();
+                })
+                .withFailureHandler(function(error) {
+                    console.error('Erro ao carregar mapeamento de assuntos:', error);
+                })
+                .getAssuntoSubAssuntoMap();
         }
-      }
 
-      // Atualiza os controles de paginação
-      function updatePaginationControls() {
-        document.getElementById('pageInfo').textContent = `Página ${currentPage} de ${totalPages}`;
-        document.getElementById('prevPageBtn').disabled = currentPage === 1;
-        document.getElementById('nextPageBtn').disabled = currentPage === totalPages || totalRecords === 0;
-      }
-
-      // Funções para abrir e fechar o modal
-      function openRecordModal(mode, rowIndex = -1, rowData = null) {
-        recordModal.classList.remove('hidden');
-        hideMessage('modalResponseMessage');
-
-        if (mode === 'add') {
-          recordFormModal.reset();
-          modalTitle.innerHTML = '<i class="fas fa-plus-circle mr-2"></i>Adicionar Novo Registro';
-          modalSubmitBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Gravar Registro';
-          recordRowIndex.value = '';
-          modalNumPaejSajInput.value = '';
-          modalNumPaejSajInput.placeholder = 'Selecione um Sistema para a máscara';
-          modalSistemaSelect.value = '';
-          updateAssimetriaFieldState();
-          populateAssuntoDropdown(modalAssuntoSelect, 'Selecione');
-          populateSubAssuntoDropdown(modalSubAssuntoSelect, [], 'Selecione', true);
-          document.getElementById('modalEntrada').value = new Date().toISOString().split('T')[0];
-          
-          // Recarregar as opções de UG Origem para garantir que estejam atualizadas
-          google.script.run.withSuccessHandler(function(ugOrigemOptions) {
-            populateUGOrigemDropdown(ugOrigemOptions);
-          }).getUGOrigemOptions();
-        } else if (mode === 'edit' && rowData) {
-          modalTitle.innerHTML = '<i class="fas fa-edit mr-2"></i>Editar Registro';
-          modalSubmitBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Atualizar Registro';
-          recordRowIndex.value = rowIndex;
-          
-          formFields.forEach(field => {
-            let inputElement = document.getElementById('modal' + field.charAt(0).toUpperCase() + field.slice(1));
-            if (field === 'numPaejSaj') inputElement = document.getElementById('modalNumPaejSaj');
-            if (field === 'aciResponsavel') inputElement = document.getElementById('modalAciResponsavel');
-            if (inputElement) {
-              const value = rowData[sheetColumnIndexes[field]];
-              if (inputElement.type === 'date') {
-                if (value && typeof value === 'string' && value.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}T/)) {
-                  inputElement.value = value.split('T')[0];
-                } else {
-                  if (value instanceof Date && !isNaN(value)) {
-                    inputElement.value = value.toISOString().split('T')[0];
-                  } else {
-                    inputElement.value = '';
-                  }
-                }
-              } else if (inputElement.tagName === 'SELECT') {
-                if (field === 'ugOrigem') {
-                  // Para UG Origem, garantir que o valor existe no dropdown antes de definir
-                  const ugOrigemValue = value || '';
-                  let ugOrigemExists = false;
-                  for (let i = 0; i < inputElement.options.length; i++) {
-                    if (inputElement.options[i].value === ugOrigemValue) {
-                      ugOrigemExists = true;
-                      break;
+        // Função para carregar opções de UG Origem
+        function carregarUGOrigemOptions() {
+            google.script.run
+                .withSuccessHandler(function(options) {
+                    const select = document.getElementById('ugOrigem');
+                    // Limpa opções existentes (exceto a primeira)
+                    while (select.children.length > 1) {
+                        select.removeChild(select.lastChild);
                     }
-                  }
-                  if (ugOrigemExists) {
-                    inputElement.value = ugOrigemValue;
-                  } else if (ugOrigemValue) {
-                    // Se o valor não existe no dropdown, adicionar como nova opção
-                    const newOption = document.createElement('option');
-                    newOption.value = ugOrigemValue;
-                    newOption.textContent = ugOrigemValue;
-                    inputElement.appendChild(newOption);
-                    inputElement.value = ugOrigemValue;
-                  }
-                } else {
-                  inputElement.value = value;
-                  if (field === 'assunto') {
-                    populateAssuntoDropdown(modalAssuntoSelect, 'Selecione');
-                    modalAssuntoSelect.value = value;
-                    updateSubAssuntoDropdown(modalAssuntoSelect, modalSubAssuntoSelect);
-                    modalSubAssuntoSelect.value = rowData[sheetColumnIndexes['subAssunto']];
-                  }
-                  if (field === 'situacao') {
-                    updateAssimetriaFieldState();
-                  }
-                  if (field === 'sistema') {
-                    updatePaejMask();
-                  }
-                }
-              } else {
-                inputElement.value = value;
-              }
-            }
-          });
-          
-          if (modalSistemaSelect.value) {
-            updatePaejMask();
-            applyMask(modalNumPaejSajInput, masks[modalSistemaSelect.value]);
-          }
-        }
-      }
-
-      function closeRecordModal() {
-        recordModal.classList.add('hidden');
-      }
-
-      // Lógica de Máscara de Entrada
-      const masks = {
-        'PAE 3.0': '2025/00000000',
-        'PAE 4.0': 'E-2025/00000000',
-        'SAJ/ATTUS': '2020.01.00000000000'
-      };
-
-      function applyMask(inputElement, mask) {
-        if (!inputElement || !mask) return;
-
-        inputElement.placeholder = mask;
-        let current = inputElement.value;
-        let formatted = '';
-        let maskCharIndex = 0;
-        let valueCharIndex = 0;
-
-        while (maskCharIndex < mask.length && valueCharIndex < current.length) {
-          if (mask[maskCharIndex] === '0') {
-            if (/\d/.test(current[valueCharIndex])) {
-              formatted += current[valueCharIndex];
-              valueCharIndex++;
-            }
-            maskCharIndex++;
-          } else {
-            formatted += mask[maskCharIndex];
-            if (mask[maskCharIndex] === current[valueCharIndex]) {
-              valueCharIndex++;
-            }
-            maskCharIndex++;
-          }
-        }
-        inputElement.value = formatted;
-      }
-
-      function updatePaejMask() {
-        const selectedSystem = modalSistemaSelect.value;
-        const mask = masks[selectedSystem];
-        if (mask) {
-          modalNumPaejSajInput.placeholder = mask;
-        } else {
-          modalNumPaejSajInput.value = '';
-          modalNumPaejSajInput.placeholder = 'Selecione um Sistema para a máscara';
-        }
-      }
-
-      // Lógica de dependência entre Situação e Assimetria
-      function updateAssimetriaFieldState() {
-        const situacaoValue = modalSituacaoSelect.value;
-        if (situacaoValue === 'CONFORME') {
-          modalAssimetriaSelect.value = '';
-          modalAssimetriaSelect.disabled = true;
-          modalAssimetriaSelect.classList.add('opacity-50');
-        } else {
-          modalAssimetriaSelect.disabled = false;
-          modalAssimetriaSelect.classList.remove('opacity-50');
-        }
-      }
-
-      // Lógica de dependência entre Assunto e Sub Assunto
-      function populateAssuntoDropdown(dropdownElement, defaultOptionText = 'Selecione') {
-        dropdownElement.innerHTML = '';
-        const defaultOption = document.createElement('option');
-        defaultOption.value = '';
-        defaultOption.textContent = defaultOptionText;
-        dropdownElement.appendChild(defaultOption);
-
-        const assuntos = Object.keys(assuntoSubAssuntoMap).sort();
-        assuntos.forEach(assunto => {
-          const option = document.createElement('option');
-          option.value = assunto;
-          option.textContent = assunto;
-          dropdownElement.appendChild(option);
-        });
-      }
-
-      function populateSubAssuntoDropdown(dropdownElement, subAssuntos, defaultOptionText = 'Selecione', disable = false) {
-        dropdownElement.innerHTML = '';
-        const defaultOption = document.createElement('option');
-        defaultOption.value = '';
-        defaultOption.textContent = defaultOptionText;
-        dropdownElement.appendChild(defaultOption);
-
-        subAssuntos.sort().forEach(subAssunto => {
-          const option = document.createElement('option');
-          option.value = subAssunto;
-          option.textContent = subAssunto;
-          dropdownElement.appendChild(option);
-        });
-
-        dropdownElement.disabled = disable;
-        dropdownElement.classList.toggle('opacity-50', disable);
-      }
-
-      function updateSubAssuntoDropdown(assuntoSelectElement, subAssuntoSelectElement) {
-        const selectedAssunto = assuntoSelectElement.value;
-        const subAssuntos = assuntoSubAssuntoMap[selectedAssunto] || [];
-        
-        if (selectedAssunto === '') {
-          populateSubAssuntoDropdown(subAssuntoSelectElement, [], 'Selecione', true);
-        } else {
-          populateSubAssuntoDropdown(subAssuntoSelectElement, subAssuntos, 'Selecione', false);
-        }
-      }
-
-      // Função para popular o dropdown de UG Origem
-      function populateUGOrigemDropdown(ugOrigemOptions) {
-        const ugOrigemSelect = document.getElementById('modalUgOrigem');
-        
-        // Limpar opções existentes (exceto a primeira)
-        while (ugOrigemSelect.children.length > 1) {
-          ugOrigemSelect.removeChild(ugOrigemSelect.lastChild);
-        }
-        
-        // Adicionar as opções de UG Origem
-        ugOrigemOptions.forEach(function(ugOrigem) {
-          const option = document.createElement('option');
-          option.value = ugOrigem;
-          option.textContent = ugOrigem;
-          ugOrigemSelect.appendChild(option);
-        });
-      }
-
-      // Event Listeners
-      modalSistemaSelect.addEventListener('change', updatePaejMask);
-      modalNumPaejSajInput.addEventListener('input', function() {
-        const selectedSystem = modalSistemaSelect.value;
-        const mask = masks[selectedSystem];
-        if (mask) {
-          applyMask(this, mask);
-        }
-      });
-
-      modalSituacaoSelect.addEventListener('change', updateAssimetriaFieldState);
-      modalAssuntoSelect.addEventListener('change', function() {
-        updateSubAssuntoDropdown(modalAssuntoSelect, modalSubAssuntoSelect);
-      });
-      filterAssuntoSelect.addEventListener('change', function() {
-        updateSubAssuntoDropdown(filterAssuntoSelect, filterSubAssuntoSelect);
-      });
-
-      // Envio do formulário
-      recordFormModal.addEventListener('submit', function(e) {
-        e.preventDefault();
-        hideMessage('modalResponseMessage');
-        toggleSpinner('modalLoadingSpinner', true);
-
-        const formData = new FormData(this);
-        const data = {};
-        for (let [key, value] of formData.entries()) {
-          data[key] = value;
+                    // Adiciona as novas opções
+                    options.forEach(function(option) {
+                        const optionElement = document.createElement('option');
+                        optionElement.value = option;
+                        optionElement.textContent = option;
+                        select.appendChild(optionElement);
+                    });
+                })
+                .withFailureHandler(function(error) {
+                    console.error('Erro ao carregar opções de UG Origem:', error);
+                })
+                .getUGOrigemOptions();
         }
 
-        const rowIndexToEdit = recordRowIndex.value;
-
-        if (rowIndexToEdit) {
-          google.script.run
-            .withSuccessHandler(function(response) {
-              toggleSpinner('modalLoadingSpinner', false);
-              if (response.sucesso) {
-                showMessage('modalResponseMessage', response.mensagem, 'success');
-                setTimeout(() => {
-                  closeRecordModal();
-                  lerDadosExistentes();
-                }, 1500);
-              } else {
-                showMessage('modalResponseMessage', response.mensagem, 'error');
-              }
-            })
-            .withFailureHandler(function(error) {
-              toggleSpinner('modalLoadingSpinner', false);
-              showSpecificError(error);
-            })
-            .atualizarDadosWeb(rowIndexToEdit, data);
-        } else {
-          google.script.run
-            .withSuccessHandler(function(response) {
-              toggleSpinner('modalLoadingSpinner', false);
-              if (response.sucesso) {
-                showMessage('modalResponseMessage', response.mensagem, 'success');
-                setTimeout(() => {
-                  closeRecordModal();
-                  currentPage = 1;
-                  lerDadosExistentes();
-                }, 1500);
-              } else {
-                showMessage('modalResponseMessage', response.mensagem, 'error');
-              }
-            })
-            .withFailureHandler(function(error) {
-              toggleSpinner('modalLoadingSpinner', false);
-              showSpecificError(error);
-            })
-            .gravarDadosWeb(data);
-        }
-      });
-
-      // Botões de controle
-      document.getElementById('refreshDataBtn').addEventListener('click', function() {
-        currentPage = 1;
-        lerDadosExistentes();
-      });
-
-      document.getElementById('prevPageBtn').addEventListener('click', function() {
-        if (currentPage > 1) {
-          currentPage--;
-          lerDadosExistentes();
-        }
-      });
-
-      document.getElementById('nextPageBtn').addEventListener('click', function() {
-        if (currentPage < totalPages) {
-          currentPage++;
-          lerDadosExistentes();
-        }
-      });
-
-      document.getElementById('applyFiltersBtn').addEventListener('click', function() {
-        hideMessage('readMessage');
-        toggleSpinner('filterSpinner', true);
-
-        const filterForm = document.getElementById('filterForm');
-        const formData = new FormData(filterForm);
-        currentFilters = {};
-        for (let [key, value] of formData.entries()) {
-          if (value) {
-            currentFilters[key] = value;
-          }
-        }
-        
-        const saidaInicio = formData.get('saidaInicio');
-        const saidaFim = formData.get('saidaFim');
-        if (saidaInicio) currentFilters.saidaInicio = saidaInicio;
-        if (saidaFim) currentFilters.saidaFim = saidaFim;
-
-        currentPage = 1;
-        lerDadosExistentes();
-      });
-
-      document.getElementById('clearFiltersBtn').addEventListener('click', function() {
-        document.getElementById('filterForm').reset();
-        populateAssuntoDropdown(filterAssuntoSelect, 'Todos');
-        populateSubAssuntoDropdown(filterSubAssuntoSelect, [], 'Todos', true);
-
-        currentFilters = {};
-        currentPage = 1;
-        lerDadosExistentes();
-      });
-
-      openAddRecordModalBtn.addEventListener('click', function() {
-        openRecordModal('add');
-      });
-      closeModalBtn.addEventListener('click', closeRecordModal);
-
-      // Função para ler dados existentes
-      function lerDadosExistentes() {
-        hideMessage('readMessage');
-        toggleSpinner('refreshSpinner', true);
-        toggleSpinner('filterSpinner', true);
-
-        const dataTableBody = document.getElementById('dataTableBody');
-        dataTableBody.innerHTML = '<tr><td colspan="14" class="text-center py-8 text-gray-500"><i class="fas fa-spinner fa-spin text-2xl mb-2"></i><br>Carregando dados...</td></tr>';
-
-        google.script.run
-          .withSuccessHandler(function(response) {
-            toggleSpinner('refreshSpinner', false);
-            toggleSpinner('filterSpinner', false);
-
-            currentTableData = response.data;
-            totalRecords = response.totalRecords;
-            totalPages = Math.ceil(totalRecords / pageSize);
-            if (totalPages === 0) totalPages = 1;
-
-            renderTableRows();
-            updatePaginationControls();
-          })
-          .withFailureHandler(function(error) {
-            toggleSpinner('refreshSpinner', false);
-            toggleSpinner('filterSpinner', false);
-            showSpecificError(error);
-            dataTableBody.innerHTML = '<tr><td colspan="14" class="text-center py-8 text-red-500"><i class="fas fa-exclamation-triangle text-2xl mb-2"></i><br>Erro ao carregar dados.</td></tr>';
-            updatePaginationControls();
-          })
-          .lerTodosOsDadosWeb(currentPage, pageSize, currentFilters);
-      }
-
-      function loadAssuntoSubAssuntoMap() {
-        google.script.run
-          .withSuccessHandler(function(map) {
-            assuntoSubAssuntoMap = map;
-            populateAssuntoDropdown(modalAssuntoSelect, 'Selecione');
-            populateAssuntoDropdown(filterAssuntoSelect, 'Todos');
-            populateSubAssuntoDropdown(modalSubAssuntoSelect, [], 'Selecione', true);
-            populateSubAssuntoDropdown(filterSubAssuntoSelect, [], 'Todos', true);
-          })
-          .withFailureHandler(function(error) {
-            showSpecificError(error);
-          })
-          .getAssuntoSubAssuntoMap();
-
-        // Carregar opções de UG Origem
-        google.script.run.withSuccessHandler(function(ugOrigemOptions) {
-          google.script.run.withSuccessHandler(function(options) {
-        }).getUGOrigemOptions();
-      }
-
-      function displayUserEmail() {
-        google.script.run
-          .withSuccessHandler(function(email) {
-            userEmailDisplay.textContent = email;
-          })
-          .withFailureHandler(function(error) {
-            showSpecificError(error);
-            userEmailDisplay.textContent = 'Erro ao carregar e-mail.';
-          })
-          .getUserEmail();
-      }
-
-      // Variáveis de controle de ordenação
-      let currentSortField = null;
-      let currentSortDirection = 'asc';
-
-      function sortTableData(field) {
-        if (currentSortField === field) {
-          currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-          currentSortField = field;
-          currentSortDirection = 'asc';
-        }
-        
-        currentTableData.sort((a, b) => {
-          const idx = sheetColumnIndexes[field];
-          let valA = a[idx];
-          let valB = b[idx];
-          
-          if (field === 'entrada' || field === 'saida') {
-            valA = valA.split('/').reverse().join('-');
-            valB = valB.split('/').reverse().join('-');
-          }
-          
-          if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
-          if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
-          return 0;
-        });
-        
-        renderTableRows();
-        updateSortIndicators();
-      }
-
-      function renderTableRows() {
-        const dataTableBody = document.getElementById('dataTableBody');
-        dataTableBody.innerHTML = '';
-        
-        if (currentTableData && currentTableData.length > 0) {
-          currentTableData.forEach(function(linha, index) {
-            const row = dataTableBody.insertRow();
-            const actualSheetRowIndex = ((currentPage - 1) * pageSize) + index + 2;
+        // Função para popular o dropdown de assuntos
+        function popularDropdownAssuntos() {
+            const selectAssunto = document.getElementById('assunto');
+            selectAssunto.innerHTML = '<option value="">Selecione um assunto</option>';
             
-            linha.forEach(function(celula, cellIndex) {
-              const cell = row.insertCell();
-              
-              // Aplicar badges de status para a coluna Situação
-              if (cellIndex === sheetColumnIndexes['situacao']) {
-                const badge = document.createElement('span');
-                badge.textContent = celula;
-                badge.className = 'status-badge';
-                
-                if (celula.toLowerCase().includes('conforme') && !celula.toLowerCase().includes('parcial')) {
-                  badge.classList.add('status-conforme');
-                } else if (celula.toLowerCase().includes('parcial')) {
-                  badge.classList.add('status-parcial');
-                } else {
-                  badge.classList.add('status-inconforme');
-                }
-                
-                cell.appendChild(badge);
-              } else {
-                cell.textContent = celula;
-              }
-            });
+            for (const assunto in assuntoSubAssuntoMap) {
+                const option = document.createElement('option');
+                option.value = assunto;
+                option.textContent = assunto;
+                selectAssunto.appendChild(option);
+            }
+        }
+
+        // Função para carregar sub assuntos baseado no assunto selecionado
+        function carregarSubAssuntos() {
+            const assuntoSelecionado = document.getElementById('assunto').value;
+            const selectSubAssunto = document.getElementById('subAssunto');
             
-            // Célula de ações
-            const actionCell = row.insertCell();
-            actionCell.className = 'flex gap-2 justify-center';
+            selectSubAssunto.innerHTML = '<option value="">Selecione um sub assunto</option>';
             
-            const editButton = document.createElement('button');
-            editButton.innerHTML = '<i class="fas fa-edit"></i>';
-            editButton.className = 'btn btn-secondary text-sm px-3 py-1';
-            editButton.title = 'Editar registro';
-            editButton.onclick = function() {
-              openRecordModal('edit', actualSheetRowIndex, linha);
+            if (assuntoSelecionado && assuntoSubAssuntoMap[assuntoSelecionado]) {
+                assuntoSubAssuntoMap[assuntoSelecionado].forEach(function(subAssunto) {
+                    const option = document.createElement('option');
+                    option.value = subAssunto;
+                    option.textContent = subAssunto;
+                    selectSubAssunto.appendChild(option);
+                });
+            }
+        }
+
+        // Função para alternar visibilidade dos filtros
+        function toggleFilters() {
+            const content = document.getElementById('filtersContent');
+            const icon = document.getElementById('filtersToggle');
+            
+            if (content.classList.contains('collapsed')) {
+                content.classList.remove('collapsed');
+                icon.classList.remove('rotated');
+            } else {
+                content.classList.add('collapsed');
+                icon.classList.add('rotated');
+            }
+        }
+
+        // Função para carregar dados da planilha
+        function carregarDados() {
+            const filtros = obterFiltros();
+            
+            document.getElementById('tabelaDados').innerHTML = `
+                <tr>
+                    <td colspan="14" class="loading">
+                        <i class="fas fa-spinner"></i><br>
+                        Carregando dados...
+                    </td>
+                </tr>
+            `;
+
+            google.script.run
+                .withSuccessHandler(function(resultado) {
+                    totalRegistros = resultado.totalRecords;
+                    exibirDados(resultado.data);
+                    atualizarPaginacao();
+                    carregarDashboard(); // Atualiza o dashboard após carregar os dados
+                })
+                .withFailureHandler(function(error) {
+                    console.error('Erro ao carregar dados:', error);
+                    document.getElementById('tabelaDados').innerHTML = `
+                        <tr>
+                            <td colspan="14" style="text-align: center; color: #e53e3e; padding: 40px;">
+                                <i class="fas fa-exclamation-triangle"></i><br>
+                                Erro ao carregar dados: ${error.message}
+                            </td>
+                        </tr>
+                    `;
+                })
+                .lerTodosOsDadosWeb(paginaAtual, registrosPorPagina, filtros);
+        }
+
+        // Função para obter filtros ativos
+        function obterFiltros() {
+            return {
+                sistema: document.getElementById('filtroSistema').value,
+                numPaejSaj: document.getElementById('filtroNumPaejSaj').value,
+                interessado: document.getElementById('filtroInteressado').value,
+                situacao: document.getElementById('filtroSituacao').value,
+                assimetria: document.getElementById('filtroAssimetria').value,
+                ugOrigem: document.getElementById('filtroUgOrigem').value,
+                assunto: document.getElementById('filtroAssunto').value,
+                subAssunto: document.getElementById('filtroSubAssunto').value,
+                aciResponsavel: document.getElementById('filtroAciResponsavel').value,
+                destino: document.getElementById('filtroDestino').value,
+                saidaInicio: document.getElementById('filtroSaidaInicio').value,
+                saidaFim: document.getElementById('filtroSaidaFim').value
             };
-            actionCell.appendChild(editButton);
+        }
+
+        // Função para exibir dados na tabela
+        function exibirDados(dados) {
+            const tbody = document.getElementById('tabelaDados');
             
-            const deleteButton = document.createElement('button');
-            deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
-            deleteButton.className = 'btn btn-danger text-sm px-3 py-1';
-            deleteButton.title = 'Deletar registro';
-            deleteButton.onclick = function() {
-              if (confirm('Tem certeza que deseja deletar este registro?')) {
+            if (dados.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="14" style="text-align: center; color: #718096; padding: 40px;">
+                            <i class="fas fa-inbox"></i><br>
+                            Nenhum registro encontrado
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = dados.map((linha, index) => {
+                const linhaIndex = (paginaAtual - 1) * registrosPorPagina + index + 2; // +2 porque a linha 1 é cabeçalho
+                return `
+                    <tr>
+                        <td>${linha[0] || ''}</td>
+                        <td>${linha[1] || ''}</td>
+                        <td>${linha[2] || ''}</td>
+                        <td>${linha[3] || ''}</td>
+                        <td>${linha[4] || ''}</td>
+                        <td>${linha[5] || ''}</td>
+                        <td>${linha[6] || ''}</td>
+                        <td>${linha[7] || ''}</td>
+                        <td>${linha[8] || ''}</td>
+                        <td>${linha[9] || ''}</td>
+                        <td>${linha[10] || ''}</td>
+                        <td>${linha[11] || ''}</td>
+                        <td>${linha[12] || ''}</td>
+                        <td class="action-buttons">
+                            <button class="btn btn-primary btn-sm" onclick="editarRegistro(${linhaIndex}, ${JSON.stringify(linha).replace(/"/g, '&quot;')})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="confirmarDelecao(${linhaIndex})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Função para atualizar paginação
+        function atualizarPaginacao() {
+            const totalPaginas = Math.ceil(totalRegistros / registrosPorPagina);
+            const paginacao = document.getElementById('paginacao');
+            
+            let html = `
+                <button onclick="irParaPagina(${paginaAtual - 1})" ${paginaAtual <= 1 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </button>
+                <div class="page-info">
+                    Página ${paginaAtual} de ${totalPaginas} (${totalRegistros} registros)
+                </div>
+                <button onclick="irParaPagina(${paginaAtual + 1})" ${paginaAtual >= totalPaginas ? 'disabled' : ''}>
+                    Próximo <i class="fas fa-chevron-right"></i>
+                </button>
+            `;
+            
+            paginacao.innerHTML = html;
+        }
+
+        // Função para ir para uma página específica
+        function irParaPagina(pagina) {
+            const totalPaginas = Math.ceil(totalRegistros / registrosPorPagina);
+            if (pagina >= 1 && pagina <= totalPaginas) {
+                paginaAtual = pagina;
+                carregarDados();
+            }
+        }
+
+        // Função para aplicar filtros
+        function aplicarFiltros() {
+            paginaAtual = 1;
+            carregarDados();
+        }
+
+        // Função para limpar filtros
+        function limparFiltros() {
+            document.getElementById('filtroSistema').value = '';
+            document.getElementById('filtroNumPaejSaj').value = '';
+            document.getElementById('filtroInteressado').value = '';
+            document.getElementById('filtroSituacao').value = '';
+            document.getElementById('filtroAssimetria').value = '';
+            document.getElementById('filtroUgOrigem').value = '';
+            document.getElementById('filtroAssunto').value = '';
+            document.getElementById('filtroSubAssunto').value = '';
+            document.getElementById('filtroAciResponsavel').value = '';
+            document.getElementById('filtroDestino').value = '';
+            document.getElementById('filtroSaidaInicio').value = '';
+            document.getElementById('filtroSaidaFim').value = '';
+            
+            paginaAtual = 1;
+            carregarDados();
+        }
+
+        // Função para abrir modal de novo registro
+        function abrirModalNovoRegistro() {
+            modoEdicao = false;
+            linhaEditando = null;
+            document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-plus"></i> Novo Registro';
+            document.getElementById('formRegistro').reset();
+            carregarUGOrigemOptions(); // Recarrega as opções de UG Origem
+            document.getElementById('modalRegistro').style.display = 'block';
+        }
+
+        // Função para editar registro
+        function editarRegistro(linhaIndex, dados) {
+            modoEdicao = true;
+            linhaEditando = linhaIndex;
+            document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-edit"></i> Editar Registro';
+            
+            // Preenche o formulário com os dados existentes
+            document.getElementById('sistema').value = dados[0] || '';
+            document.getElementById('numPaejSaj').value = dados[1] || '';
+            document.getElementById('interessado').value = dados[2] || '';
+            
+            // Converte data de dd/mm/aaaa para aaaa-mm-dd para o input date
+            if (dados[3]) {
+                const partesData = dados[3].split('/');
+                if (partesData.length === 3) {
+                    document.getElementById('entrada').value = `${partesData[2]}-${partesData[1].padStart(2, '0')}-${partesData[0].padStart(2, '0')}`;
+                }
+            }
+            
+            document.getElementById('situacao').value = dados[4] || '';
+            document.getElementById('assimetria').value = dados[5] || '';
+            document.getElementById('observacao').value = dados[6] || '';
+            
+            // Carrega as opções de UG Origem e depois seleciona o valor
+            google.script.run
+                .withSuccessHandler(function(options) {
+                    const select = document.getElementById('ugOrigem');
+                    // Limpa opções existentes (exceto a primeira)
+                    while (select.children.length > 1) {
+                        select.removeChild(select.lastChild);
+                    }
+                    // Adiciona as novas opções
+                    options.forEach(function(option) {
+                        const optionElement = document.createElement('option');
+                        optionElement.value = option;
+                        optionElement.textContent = option;
+                        select.appendChild(optionElement);
+                    });
+                    
+                    // Se o valor atual não está nas opções, adiciona ele
+                    const valorAtual = dados[7] || '';
+                    if (valorAtual && !options.includes(valorAtual)) {
+                        const optionElement = document.createElement('option');
+                        optionElement.value = valorAtual;
+                        optionElement.textContent = valorAtual;
+                        select.appendChild(optionElement);
+                    }
+                    
+                    // Seleciona o valor atual
+                    select.value = valorAtual;
+                })
+                .withFailureHandler(function(error) {
+                    console.error('Erro ao carregar opções de UG Origem:', error);
+                })
+                .getUGOrigemOptions();
+            
+            document.getElementById('assunto').value = dados[8] || '';
+            carregarSubAssuntos(); // Carrega os sub assuntos baseado no assunto
+            
+            // Aguarda um pouco para os sub assuntos carregarem
+            setTimeout(() => {
+                document.getElementById('subAssunto').value = dados[9] || '';
+            }, 100);
+            
+            document.getElementById('aciResponsavel').value = dados[10] || '';
+            document.getElementById('destino').value = dados[11] || '';
+            
+            // Converte data de dd/mm/aaaa para aaaa-mm-dd para o input date
+            if (dados[12]) {
+                const partesDataSaida = dados[12].split('/');
+                if (partesDataSaida.length === 3) {
+                    document.getElementById('saida').value = `${partesDataSaida[2]}-${partesDataSaida[1].padStart(2, '0')}-${partesDataSaida[0].padStart(2, '0')}`;
+                }
+            }
+            
+            document.getElementById('modalRegistro').style.display = 'block';
+        }
+
+        // Função para confirmar deleção
+        function confirmarDelecao(linhaIndex) {
+            if (confirm('Tem certeza que deseja deletar este registro? Esta ação não pode ser desfeita.')) {
                 google.script.run
-                  .withSuccessHandler(function(response) {
-                    if (response.sucesso) {
-                      showMessage('readMessage', response.mensagem, 'success');
-                      lerDadosExistentes();
-                    } else {
-                      showMessage('readMessage', response.mensagem, 'error');
-                    }
-                  })
-                  .withFailureHandler(function(error) {
-                    showSpecificError(error);
-                  })
-                  .deletarRegistroWeb(actualSheetRowIndex);
-              }
-            };
-            actionCell.appendChild(deleteButton);
-          });
-        } else {
-          const row = dataTableBody.insertRow();
-          const cell = row.insertCell();
-          cell.colSpan = 14;
-          cell.className = 'text-center py-8 text-gray-500';
-          cell.innerHTML = '<i class="fas fa-inbox text-3xl mb-2"></i><br>Nenhum dado encontrado.';
+                    .withSuccessHandler(function(resultado) {
+                        if (resultado.sucesso) {
+                            alert('Registro deletado com sucesso!');
+                            carregarDados();
+                        } else {
+                            alert('Erro ao deletar registro: ' + resultado.mensagem);
+                        }
+                    })
+                    .withFailureHandler(function(error) {
+                        console.error('Erro ao deletar registro:', error);
+                        alert('Erro ao deletar registro: ' + error.message);
+                    })
+                    .deletarRegistroWeb(linhaIndex);
+            }
         }
-      }
 
-      function updateSortIndicators() {
-        document.querySelectorAll('.tabela-dados th.sortable').forEach(th => {
-          th.classList.remove('sorted-asc', 'sorted-desc');
-          if (th.dataset.field === currentSortField) {
-            th.classList.add(currentSortDirection === 'asc' ? 'sorted-asc' : 'sorted-desc');
-          }
+        // Função para fechar modal
+        function fecharModal() {
+            document.getElementById('modalRegistro').style.display = 'none';
+            document.getElementById('formRegistro').reset();
+            modoEdicao = false;
+            linhaEditando = null;
+        }
+
+        // Event listener para o formulário
+        document.getElementById('formRegistro').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const dados = {};
+            
+            for (let [key, value] of formData.entries()) {
+                dados[key] = value;
+            }
+            
+            if (modoEdicao) {
+                // Atualizar registro existente
+                google.script.run
+                    .withSuccessHandler(function(resultado) {
+                        if (resultado.sucesso) {
+                            alert('Registro atualizado com sucesso!');
+                            fecharModal();
+                            carregarDados();
+                        } else {
+                            alert('Erro ao atualizar registro: ' + resultado.mensagem);
+                        }
+                    })
+                    .withFailureHandler(function(error) {
+                        console.error('Erro ao atualizar registro:', error);
+                        alert('Erro ao atualizar registro: ' + error.message);
+                    })
+                    .atualizarDadosWeb(linhaEditando, dados);
+            } else {
+                // Criar novo registro
+                google.script.run
+                    .withSuccessHandler(function(resultado) {
+                        if (resultado.sucesso) {
+                            alert('Registro salvo com sucesso!');
+                            fecharModal();
+                            carregarDados();
+                        } else {
+                            alert('Erro ao salvar registro: ' + resultado.mensagem);
+                        }
+                    })
+                    .withFailureHandler(function(error) {
+                        console.error('Erro ao salvar registro:', error);
+                        alert('Erro ao salvar registro: ' + error.message);
+                    })
+                    .gravarDadosWeb(dados);
+            }
         });
-      }
 
-      // Event listeners para ordenação
-      document.querySelectorAll('.tabela-dados th.sortable').forEach(th => {
-        th.addEventListener('click', function() {
-          sortTableData(this.dataset.field);
-        });
-      });
-
-      function showSpecificError(error) {
-        console.error('Erro:', error);
-        showMessage('readMessage', 'Erro: ' + error.toString(), 'error');
-      }
-
-      // Inicialização
-      document.addEventListener('DOMContentLoaded', function() {
-        displayUserEmail();
-        loadAssuntoSubAssuntoMap();
-        lerDadosExistentes();
-      });
+        // Fechar modal ao clicar fora dele
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalRegistro');
+            if (event.target === modal) {
+                fecharModal();
+            }
+        }
     </script>
-  </body>
+</body>
 </html>
