@@ -510,46 +510,6 @@ function getAssuntoSubAssuntoMap() {
 }
 
 /**
- * Lê os dados da coluna A da aba 'Config Setor' para popular o combo box de UG Origem.
- * @return {Array<string>} Um array contendo os valores únicos da coluna A da aba Config Setor.
- */
-function getUGOrigemOptions() {
-  var planilha = SpreadsheetApp.getActiveSpreadsheet();
-  var abaConfig = planilha.getSheetByName('Config Setor');
-
-  var ugOrigemOptions = [];
-
-  if (abaConfig == null) {
-    Logger.log('A aba "Config Setor" não foi encontrada. Retornando array vazio para UG Origem.');
-    return ugOrigemOptions;
-  }
-
-  var ultimaLinha = abaConfig.getLastRow();
-  if (ultimaLinha < 1) {
-    Logger.log('A aba "Config Setor" está vazia.');
-    return ugOrigemOptions;
-  }
-
-  // Obter todos os valores da coluna A (UG Origem)
-  var valores = abaConfig.getRange(1, 1, ultimaLinha, 1).getValues();
-
-  // Processar os valores, removendo duplicatas e valores vazios
-  var valoresUnicos = new Set();
-  valores.forEach(function(row) {
-    var valor = row[0] ? row[0].toString().trim() : '';
-    if (valor && valor.toLowerCase() !== 'ug origem') { // Ignora cabeçalho se existir
-      valoresUnicos.add(valor);
-    }
-  });
-
-  // Converter Set para Array e ordenar alfabeticamente
-  ugOrigemOptions = Array.from(valoresUnicos).sort();
-
-  Logger.log('Opções de UG Origem carregadas: ' + ugOrigemOptions.join(', '));
-  return ugOrigemOptions;
-}
-
-/**
  * Deleta um registro da aba 'Dados' pelo índice da linha (base 1).
  * @param {number} rowIndex O índice da linha na planilha (base 1) a ser deletada.
  * @return {Object} Um objeto indicando sucesso ou falha da operação.

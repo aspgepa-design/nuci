@@ -1486,7 +1486,7 @@
 
         // Carregar opções de UG Origem
         google.script.run.withSuccessHandler(function(ugOrigemOptions) {
-          populateUGOrigemDropdown(ugOrigemOptions);
+          google.script.run.withSuccessHandler(function(options) {
         }).getUGOrigemOptions();
       }
 
