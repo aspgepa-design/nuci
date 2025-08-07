@@ -900,7 +900,9 @@
                 <i class="fas fa-building mr-1"></i>
                 UG Origem:
               </label>
-              <input type="text" id="modalUgOrigem" name="ugOrigem" class="form-input">
+              <select id="modalUgOrigem" name="ugOrigem" class="form-select">
+                <option value="">Selecione uma UG Origem</option>
+              </select>
             </div>
             <div class="form-group">
               <label for="modalAssunto">
@@ -1104,6 +1106,11 @@
           populateAssuntoDropdown(modalAssuntoSelect, 'Selecione');
           populateSubAssuntoDropdown(modalSubAssuntoSelect, [], 'Selecione', true);
           document.getElementById('modalEntrada').value = new Date().toISOString().split('T')[0];
+          
+          // Recarregar as opções de UG Origem para garantir que estejam atualizadas
+          google.script.run.withSuccessHandler(function(ugOrigemOptions) {
+            populateUGOrigemDropdown(ugOrigemOptions);
+          }).getUGOrigemOptions();
         } else if (mode === 'edit' && rowData) {
           modalTitle.innerHTML = '<i class="fas fa-edit mr-2"></i>Editar Registro';
           modalSubmitBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Atualizar Registro';
@@ -1126,18 +1133,40 @@
                   }
                 }
               } else if (inputElement.tagName === 'SELECT') {
-                inputElement.value = value;
-                if (field === 'assunto') {
-                  populateAssuntoDropdown(modalAssuntoSelect, 'Selecione');
-                  modalAssuntoSelect.value = value;
-                  updateSubAssuntoDropdown(modalAssuntoSelect, modalSubAssuntoSelect);
-                  modalSubAssuntoSelect.value = rowData[sheetColumnIndexes['subAssunto']];
-                }
-                if (field === 'situacao') {
-                  updateAssimetriaFieldState();
-                }
-                if (field === 'sistema') {
-                  updatePaejMask();
+                if (field === 'ugOrigem') {
+                  // Para UG Origem, garantir que o valor existe no dropdown antes de definir
+                  const ugOrigemValue = value || '';
+                  let ugOrigemExists = false;
+                  for (let i = 0; i < inputElement.options.length; i++) {
+                    if (inputElement.options[i].value === ugOrigemValue) {
+                      ugOrigemExists = true;
+                      break;
+                    }
+                  }
+                  if (ugOrigemExists) {
+                    inputElement.value = ugOrigemValue;
+                  } else if (ugOrigemValue) {
+                    // Se o valor não existe no dropdown, adicionar como nova opção
+                    const newOption = document.createElement('option');
+                    newOption.value = ugOrigemValue;
+                    newOption.textContent = ugOrigemValue;
+                    inputElement.appendChild(newOption);
+                    inputElement.value = ugOrigemValue;
+                  }
+                } else {
+                  inputElement.value = value;
+                  if (field === 'assunto') {
+                    populateAssuntoDropdown(modalAssuntoSelect, 'Selecione');
+                    modalAssuntoSelect.value = value;
+                    updateSubAssuntoDropdown(modalAssuntoSelect, modalSubAssuntoSelect);
+                    modalSubAssuntoSelect.value = rowData[sheetColumnIndexes['subAssunto']];
+                  }
+                  if (field === 'situacao') {
+                    updateAssimetriaFieldState();
+                  }
+                  if (field === 'sistema') {
+                    updatePaejMask();
+                  }
                 }
               } else {
                 inputElement.value = value;
@@ -1258,6 +1287,24 @@
         } else {
           populateSubAssuntoDropdown(subAssuntoSelectElement, subAssuntos, 'Selecione', false);
         }
+      }
+
+      // Função para popular o dropdown de UG Origem
+      function populateUGOrigemDropdown(ugOrigemOptions) {
+        const ugOrigemSelect = document.getElementById('modalUgOrigem');
+        
+        // Limpar opções existentes (exceto a primeira)
+        while (ugOrigemSelect.children.length > 1) {
+          ugOrigemSelect.removeChild(ugOrigemSelect.lastChild);
+        }
+        
+        // Adicionar as opções de UG Origem
+        ugOrigemOptions.forEach(function(ugOrigem) {
+          const option = document.createElement('option');
+          option.value = ugOrigem;
+          option.textContent = ugOrigem;
+          ugOrigemSelect.appendChild(option);
+        });
       }
 
       // Event Listeners
@@ -1436,6 +1483,11 @@
             showSpecificError(error);
           })
           .getAssuntoSubAssuntoMap();
+
+        // Carregar opções de UG Origem
+        google.script.run.withSuccessHandler(function(ugOrigemOptions) {
+          populateUGOrigemDropdown(ugOrigemOptions);
+        }).getUGOrigemOptions();
       }
 
       function displayUserEmail() {
